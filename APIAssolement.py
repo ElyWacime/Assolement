@@ -45,13 +45,11 @@ class Configuration(BaseModel):
     espace : float = Field(default=0)
     LAT : float = Field(default=44.68)
     LON : float = Field(default=0.55)
-    lon_PV : float = Field(default=1.722)
-    larg_PV : float = Field(default=1)
-    precision : float = Field(default=1)
     alphaPV : str = Field(default="Sud")
+    '''precision : float = Field(default=1)
     date_debut : str = Field(default="2023/01/01")
-    date_fin : str = Field(default="2023/12/31")
-    betaPV : float = Field(default=22)
+    date_fin : str = Field(default="2023/12/31")'''
+    #betaPV : float = Field(default=22)
     h_serre : float = Field(default=5)
     couverture : int = Field(default=50)
     
@@ -62,7 +60,14 @@ def calculte_assolement():
 
     configuration_data = request.get_json()
     configuration = Configuration(**configuration_data)
-
+    
+    betaPV = 22
+    precision = 1
+    date_debut = "2023/01/01"
+    date_fin = "2023/12/31"
+    lon_PV = 1.772
+    larg_PV = 1.134
+    
     cos = math.cos
     sin = math.sin
     tan = math.tan
@@ -86,32 +91,32 @@ def calculte_assolement():
         alphaPV=225
 
     alphaPV=math.radians(alphaPV)
-    betaPV= math.radians(configuration.betaPV)
+    betaPV= math.radians(betaPV)
 
-    if configuration.nbr_chap==None: #pour que le reste fonctionne, si on a une monochapelle on prend la valeur 1 
-        configuration.nbr_chap=1 
-    if configuration.espace != None: #on a affaire avec une ombrière 
-        larg_ombriere = configuration.larg_PV*cos(betaPV)
-        nbr_chap = int(larg_serre/(larg_ombriere+espace)) #nombre de rangées qu'on peut mettre 
+    '''if configuration.nbr_chap==None: #pour que le reste fonctionne, si on a une monochapelle on prend la valeur 1 
+        configuration.nbr_chap=1 '''
+    if configuration.espace != 0: # original if statement: configuration.espace != None: #on a affaire avec une ombrière 
+        larg_ombriere = larg_PV*cos(betaPV)
+        nbr_chap = int(configuration.larg_serre/(larg_ombriere+configuration.espace)) #nombre de rangées qu'on peut mettre 
         nbr_rang= 1
-    else:
-        espace= 0 
+    '''else:
+        configuration.espace= 0''' 
 
     if configuration.type_info == 'monochapelle symétrique' or configuration.type_info== 'multichapelle symétrique':
         nbr_PV= recherche_nbr_PV(configuration.lon_serre,
-                                 configuration.lon_PV,
+                                 lon_PV,
                                  configuration.damier,
                                  configuration.puit_lux)
-        (nbr_rang, couv_real)= recherche_rang(configuration.larg_PV,
+        (nbr_rang, couv_real)= recherche_rang(larg_PV,
                                               configuration.couverture,
-                                              larg_serre, betaPV)
+                                              configuration.larg_serre, betaPV)
         #print("Couverture effectivement réalisée: ", couv_real)
-        h_toit= larg_serre/2*tan(betaPV) 
-        grand_cote= larg_serre/2
+        h_toit= configuration.larg_serre/2*tan(betaPV) 
+        grand_cote= configuration.larg_serre/2
         PV= position_PV (configuration.lon_serre,
-                         larg_serre, grand_cote,
-                         configuration.lon_PV,
-                         configuration.larg_PV,
+                         configuration.larg_serre, grand_cote,
+                         lon_PV,
+                         larg_PV,
                          alphaPV, betaPV, nbr_PV,
                          nbr_rang, configuration.nbr_chap, configuration.espace,
                          configuration.damier,
@@ -122,44 +127,44 @@ def calculte_assolement():
         betaPV= math.radians(configuration.petit_angle)
         h_toit= grand_cote *tan(betaPV)
         nbr_PV= recherche_nbr_PV(configuration.lon_serre,
-                                 configuration.lon_PV,
+                                 lon_PV,
                                  configuration.damier,
                                  configuration.puit_lux)
-        (nbr_rang, couv_real)= recherche_rang(configuration.larg_PV,
+        (nbr_rang, couv_real)= recherche_rang(larg_PV,
                                               configuration.couverture,
-                                              larg_serre, betaPV)
+                                              configuration.larg_serre, betaPV)
         print("Couverture effectivement réalisée: ", couv_real)
         PV= position_PV (configuration.lon_serre,
-                         larg_serre, grand_cote,
-                         configuration.lon_PV,
-                         configuration.larg_PV,
+                         configuration.larg_serre, grand_cote,
+                         lon_PV,
+                         larg_PV,
                          alphaPV, betaPV, nbr_PV,
-                         nbr_rang, nbr_chap, espace,
+                         nbr_rang, nbr_chap, configuration.espace,
                          configuration.damier,
                          configuration.puit_lux)
-        configuration.grand_cote = larg_serre*sin(rad(configuration.grand_angle))/sin(rad(180-configuration.grand_angle-configuration.petit_angle))*cos(rad(configuration.petit_angle))
-        configuration.petit_angle = larg_serre-configuration.grand_cote
+        configuration.grand_cote = configuration.larg_serre*sin(rad(configuration.grand_angle))/sin(rad(180-configuration.grand_angle-configuration.petit_angle))*cos(rad(configuration.petit_angle))
+        configuration.petit_angle = configuration.larg_serre-configuration.grand_cote
     elif configuration.type_info == 'ombrière':
         #NB dans le cas de l'ombrière, lon_serre correspond à celle du projet
         #(l'ombrière faisant par defaut les dimensions d'un PV)
         nbr_PV= recherche_nbr_PV(configuration.lon_serre,
-                                 configuration.lon_PV,
+                                 lon_PV,
                                  configuration.damier,
                                  configuration.puit_lux)
         h_toit= larg_ombriere*tan(betaPV)
         PV= position_PV (configuration.lon_serre,
                          larg_ombriere, larg_ombriere,
-                         configuration.lon_PV,
-                         configuration.larg_PV,
+                         lon_PV,
+                         larg_PV,
                          alphaPV, betaPV, nbr_PV,
-                         nbr_rang, nbr_chap, espace,
+                         nbr_rang, nbr_chap, configuration.espace,
                          configuration.damier,
                          configuration.puit_lux)
-        larg_serre= larg_ombriere
+        configuration.larg_serre= larg_ombriere
 
 
     nbr_PV = recherche_nbr_PV(configuration.lon_serre,
-                              configuration.lon_PV,
+                              lon_PV,
                               configuration.damier,
                               configuration.puit_lux)
 
@@ -168,14 +173,14 @@ def calculte_assolement():
      ete_pourcent, hiver, hiver_pourcent,
      printemps, print_pourcent, automne,
      auto_pourcent ) = carte_lux(configuration.LAT, configuration.LON,
-                                configuration.lon_serre, larg_serre,
-                                configuration.lon_PV, configuration.larg_PV,
-                                configuration.precision, alphaPV,
-                                nbr_PV, configuration.date_debut,
-                                configuration.date_fin, betaPV, PV,
+                                configuration.lon_serre, configuration.larg_serre,
+                                lon_PV,
+                                larg_PV,
+                                precision, alphaPV,
+                                date_debut,date_fin, betaPV, PV,
                                 configuration.h_serre, nbr_rang,
                                 nbr_chap, h_toit,
-                                espace, configuration.damier,
+                                configuration.espace, configuration.damier,
                                 angles_df)
 
     data = {"cubes": cubes, "cubes_pourcent": cubes_pourcent, "hiver_pourcent": hiver_pourcent,
