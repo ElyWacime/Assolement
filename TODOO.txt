@@ -1,0 +1,8 @@
+1. anderstand the code
+2. make small changes to adjust
+3. transform it into a flask app
+4. deploy it into a VPS server
+5. configure xngin
+6. design a friendly user interface
+7. code the javascript for it
+8. fix bugs and errors
