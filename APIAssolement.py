@@ -32,28 +32,28 @@ if not app.debug:
     app.logger.addHandler(file_handler)
 
 class Configuration(BaseModel):
-    type_info : str = Field(default=None)
-    damier : bool = Field(default=False)
-    puit_lux : str = Field(default=None)
-    lon_serre : float = Field(default=None)
-    larg_serre : float = Field(default=None)
-    nbr_chap : float = Field(default=None)
-    petit_angle : float = Field(default=None)
-    grand_angle : float = Field(default=None)
-    grand_cote : float = Field(default=None)
-    petit_cote : float = Field(default=None)
-    espace : float = Field(default=None)
-    LAT : float = Field(default=None)
-    LON : float = Field(default=None)
+    type_info : str = Field(default="monochapelle symétrique")
+    damier : str = Field(default="non")
+    puit_lux : float = Field(default=0)
+    lon_serre : float = Field(default=20)
+    larg_serre : float = Field(default=10)
+    nbr_chap : float = Field(default=1)
+    petit_angle : float = Field(default=22)
+    grand_angle : float = Field(default=45)
+    grand_cote : float = Field(default=0)
+    petit_cote : float = Field(default=0)
+    espace : float = Field(default=0)
+    LAT : float = Field(default=44.68)
+    LON : float = Field(default=0.55)
     lon_PV : float = Field(default=1.722)
     larg_PV : float = Field(default=1)
     precision : float = Field(default=1)
-    alpha_PV : str = Field(default=None)
+    alphaPV : str = Field(default="Sud")
     date_debut : str = Field(default="2023/01/01")
     date_fin : str = Field(default="2023/12/31")
-    beta_PV : float = Field(default=22)
-    h_serre : float = Field(default=None)
-    couverture : int = Field(default=None)
+    betaPV : float = Field(default=22)
+    h_serre : float = Field(default=5)
+    couverture : int = Field(default=50)
     
     
 
@@ -66,30 +66,31 @@ def calculte_assolement():
     cos = math.cos
     sin = math.sin
     tan = math.tan
+    rad = math.radians
     
-    if configuration.alpha_PV == 'Sud':
-        alpha_PV= 0
-    if configuration.alpha_PV =='Nord':
-        alpha_PV= 180
-    if configuration.alpha_PV =='Est':
-        alpha_PV=90
-    if configuration.alpha_PV=='Ouest':
-        alpha_PV=270
-    if configuration.alpha_PV=='Sud-Est':
-        alpha_PV=45
-    if configuration.alpha_PV=='Sud-Ouest':
-        alpha_PV=315
-    if configuration.alpha_PV=='Nord-Est':
-        alpha_PV=   135 
-    if configuration.alpha_PV=='Nord-Ouest':
-        alpha_PV=225
+    if configuration.alphaPV == 'Sud':
+        alphaPV= 0
+    if configuration.alphaPV =='Nord':
+        alphaPV= 180
+    if configuration.alphaPV =='Est':
+        alphaPV=90
+    if configuration.alphaPV=='Ouest':
+        alphaPV=270
+    if configuration.alphaPV=='Sud-Est':
+        alphaPV=45
+    if configuration.alphaPV=='Sud-Ouest':
+        alphaPV=315
+    if configuration.alphaPV=='Nord-Est':
+        alphaPV=135 
+    if configuration.alphaPV=='Nord-Ouest':
+        alphaPV=225
 
-    alphaPV=math.radians(alphaPV) 
-    betaPV= math.radians(betaPV)
+    alphaPV=math.radians(alphaPV)
+    betaPV= math.radians(configuration.betaPV)
 
-    if nbr_chap==None: #pour que le reste fonctionne, si on a une monochapelle on prend la valeur 1 
-        nbr_chap=1 
-    if espace != None: #on a affaire avec une ombrière 
+    if configuration.nbr_chap==None: #pour que le reste fonctionne, si on a une monochapelle on prend la valeur 1 
+        configuration.nbr_chap=1 
+    if configuration.espace != None: #on a affaire avec une ombrière 
         larg_ombriere = configuration.larg_PV*cos(betaPV)
         nbr_chap = int(larg_serre/(larg_ombriere+espace)) #nombre de rangées qu'on peut mettre 
         nbr_rang= 1
@@ -112,7 +113,7 @@ def calculte_assolement():
                          configuration.lon_PV,
                          configuration.larg_PV,
                          alphaPV, betaPV, nbr_PV,
-                         nbr_rang, nbr_chap, espace,
+                         nbr_rang, configuration.nbr_chap, configuration.espace,
                          configuration.damier,
                          configuration.puit_lux)
 
@@ -136,7 +137,8 @@ def calculte_assolement():
                          nbr_rang, nbr_chap, espace,
                          configuration.damier,
                          configuration.puit_lux)
-
+        configuration.grand_cote = larg_serre*sin(rad(configuration.grand_angle))/sin(rad(180-configuration.grand_angle-configuration.petit_angle))*cos(rad(configuration.petit_angle))
+        configuration.petit_angle = larg_serre-configuration.grand_cote
     elif configuration.type_info == 'ombrière':
         #NB dans le cas de l'ombrière, lon_serre correspond à celle du projet
         #(l'ombrière faisant par defaut les dimensions d'un PV)
