@@ -15,6 +15,7 @@ from flask_cors import CORS
 import logging
 from pydantic import BaseModel, Field
 from logging.handlers import RotatingFileHandler
+import json
 
 from Assolement import recherche_nbr_PV, recherche_rang, position_PV, angles, carte_lux
 #from affichage import *
@@ -172,22 +173,52 @@ def calculte_assolement():
     (cubes, cubes_pourcent, ete,
      ete_pourcent, hiver, hiver_pourcent,
      printemps, print_pourcent, automne,
-     auto_pourcent ) = carte_lux(configuration.LAT, configuration.LON,
-                                configuration.lon_serre, configuration.larg_serre,
-                                lon_PV,
-                                larg_PV,
-                                precision, alphaPV,
-                                date_debut,date_fin, betaPV, PV,
-                                configuration.h_serre, nbr_rang,
-                                nbr_chap, h_toit,
-                                configuration.espace, configuration.damier,
-                                angles_df)
+     auto_pourcent ) = carte_lux(LAT=configuration.LAT,
+                                LON=configuration.LON,
+                                lon_serre=configuration.lon_serre,
+                                larg_serre=configuration.larg_serre,
+                                lon_PV=lon_PV,
+                                larg_PV=larg_PV,
+                                precision=precision,
+                                alphaPV=alphaPV,
+                                nbr_PV=nbr_PV,
+                                date_debut=date_debut,
+                                date_fin=date_fin,
+                                betaPV=betaPV,
+                                PV=PV,
+                                h_serre=configuration.h_serre,
+                                nbr_rang=nbr_rang,
+                                nbr_chap=configuration.nbr_chap,
+                                h_toit=h_toit,
+                                espace=configuration.espace,
+                                damier=configuration.damier,
+                                angles_df=angles_df)
 
-    data = {"cubes": cubes, "cubes_pourcent": cubes_pourcent, "hiver_pourcent": hiver_pourcent,
+    '''data = {"cubes": cubes, "cubes_pourcent": cubes_pourcent, "hiver_pourcent": hiver_pourcent,
             "hiver": hiver, "ete_pourcent": ete_pourcent, "ete": ete, "printemps": printemps,
             "print_pourcent": print_pourcent, "automne": automne, "auto_pourcent": auto_pourcent}
+    for key in data:
+        key = key.tolist()
+
+    return jsonify(data)'''
+    data = {
+        "cubes": cubes,
+        "cubes_pourcent": cubes_pourcent,
+        "hiver_pourcent": hiver_pourcent,
+        "hiver": hiver,
+        "ete_pourcent": ete_pourcent,
+        "ete": ete,
+        "printemps": printemps,
+        "print_pourcent": print_pourcent,
+        "automne": automne,
+        "auto_pourcent": auto_pourcent
+    }
+    
+    for key, value in data.items():
+        if isinstance(value, np.ndarray):
+            data[key] = value.tolist()
     
     return jsonify(data)
     
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(threaded=True, debug=True)

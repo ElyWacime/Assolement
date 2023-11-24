@@ -108,9 +108,9 @@ def calcul_ombre (lon_serre, larg_serre, lon_PV, larg_PV, nbr_PV, alphaPV, betaP
 
     H= h_serre + h_toit
     if damier!= False: 
-        Ombre = [[[[[] for _ in range(4)] for _ in range (24)] for _ in range(nbr_PV*nbr_rang)] for chap in range (nbr_chap)] 
+        Ombre = [[[[[] for _ in range(4)] for _ in range (24)] for _ in range(int(nbr_PV*nbr_rang))] for chap in range (int(nbr_chap))] 
        
-        for chap in range (nbr_chap):
+        for chap in range (int(nbr_chap)):
             for indice in range (nbr_PV*nbr_rang):    
                 for heure in range (24): 
                         usx=cos(math.radians(gamaS[heure]))*cos(math.radians(thetaS[heure]))
@@ -155,7 +155,7 @@ renvoie la position des PV'''
     sin= math.sin
     cos=math.cos
     if damier!= False:
-        PV = [[[[] for _ in range (4)] for _ in range((nbr_PV*nbr_rang))] for _ in range (nbr_chap)] #initialisation de PV
+        PV = [[[[] for _ in range (4)] for _ in range((nbr_PV*nbr_rang))] for _ in range (int(nbr_chap))] #initialisation de PV
         transverse= grand_cote/ cos(betaPV) #longueur de la pente du toit 
         k1= 0
         k2= 1- larg_PV/transverse #place le panneau au centre 
@@ -427,7 +427,7 @@ def intersect(rectangle, carre): #est ce que le rectangle et le carré s'interse
 
 def test (nbr_rang, nbr_PV, ombre, heure, carre, nbr_chap, damier) :
     if damier!= False : 
-        for chap in range (nbr_chap):
+        for chap in range (int(nbr_chap)):
             for rang in range (nbr_rang):
                 for panneau in range (nbr_PV):
                     indice = rang * nbr_PV + panneau
