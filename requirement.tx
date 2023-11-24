@@ -1,0 +1,8 @@
+pvlib
+numpy
+matplotlib
+pandas
+tqdm
+flask
+flask_cors
+pydantic
