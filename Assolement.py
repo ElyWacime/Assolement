@@ -308,11 +308,12 @@ def calcul_carré (long, larg, larg_serre, precision, lon_serre, alphaPV):
     sin= math.sin
     return [(-larg_serre/2+larg*precision)*cos(alphaPV)+long*precision*sin(alphaPV), sin(alphaPV)*(larg_serre/2-larg*precision)+cos(alphaPV)*(long*precision)] 
  
-def carte_lux (LAT, LON, lon_serre, larg_serre, lon_PV, larg_PV, precision, alphaPV, nbr_PV, date_debut, date_fin, betaPV, PV, h_serre, nbr_rang, nbr_chap, h_toit, espace, damier, angles_df ):
+def carte_lux (LAT, LON, lon_serre, larg_serre, lon_PV, larg_PV, precision, alphaPV, nbr_PV, date_debut, date_fin, betaPV, PV, h_serre, nbr_rang, nbr_chap, h_toit, espace, damier, angles_df, couverture):
     ''' Calcule les différentes cartes: 
         - cubes représente la radiation reçue selon le quadrillage choisi sur l'année. Cubes_pourcent est la même carte en pourcentage
         - les cartes de saisons (ete, automone, hiver et printemps) sont pareilles mais sur des jours différents. '''
    
+    taux_couv= couverture/100
     Itot, Ir= rayonnement (LAT, LON, date_debut, date_fin) #récupère les données
     cubes=np.zeros((int(lon_serre/precision), int((larg_serre+espace)*nbr_chap/precision )))  #initialise la grille 
     ete= np.zeros((int(lon_serre/precision), int((larg_serre+espace)*nbr_chap/precision )))
@@ -345,35 +346,35 @@ def carte_lux (LAT, LON, lon_serre, larg_serre, lon_PV, larg_PV, precision, alph
                 for heure in range (24):
                     presence_ombre= test (nbr_rang, nbr_PV, ombre, heure, carre, nbr_chap, damier)            
                     if presence_ombre:
-                        cubes[long][larg]+=  0.5 * Ir[heure+24*jour] 
+                        cubes[long][larg]+=  taux_couv * Ir[heure+24*jour] 
                     else: 
-                        cubes[long][larg]+= 0.8* Itot [heure+24*jour]                       
+                        cubes[long][larg]+= 0.9* Itot [heure+24*jour]                       
                         
                     if jour<80 or jour >=356:
                         if presence_ombre:
-                            hiver[long][larg]+=  0.5*Ir[heure+24*jour]
+                            hiver[long][larg]+=  taux_couv*Ir[heure+24*jour]
                             
                         else: 
-                            hiver[long][larg]+= 0.8* Itot[heure+24*jour]
+                            hiver[long][larg]+= 0.9* Itot[heure+24*jour]
                             
                     if 172<=jour<267:
                         if presence_ombre: 
-                            ete [long][larg]+=  0.5*Ir[heure+24*jour] 
+                            ete [long][larg]+=  taux_couv*Ir[heure+24*jour] 
                         else: 
-                            ete [long][larg]+= 0.8*Itot [heure+ 24*jour]
+                            ete [long][larg]+= 0.9*Itot [heure+ 24*jour]
                         
                     if 267<=jour<356:
                         if presence_ombre:
-                            automne [long][larg]+= 0.5* Ir[heure+24*jour] 
+                            automne [long][larg]+= taux_couv* Ir[heure+24*jour] 
                            
                         else: 
-                            automne [long][larg]+= 0.8* Itot[heure+24*jour] 
+                            automne [long][larg]+= 0.9* Itot[heure+24*jour] 
                         
                     if 80<=jour<172:
                         if presence_ombre:
-                            printemps [long][larg]+=  0.5*Ir[heure+24*jour]
+                            printemps [long][larg]+=  taux_couv*Ir[heure+24*jour]
                         else:
-                            printemps [long][larg]+= 0.8* Itot[heure+24*jour] 
+                            printemps [long][larg]+= 0.9* Itot[heure+24*jour] 
                         
         progress_bar.update(1)                            
                     

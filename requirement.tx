@@ -1,8 +1,1 @@
-pvlib
-numpy
-matplotlib
-pandas
-tqdm
-flask
-flask_cors
-pydantic
+pvlib numpy matplotlib pandas tqdm flask flask_cors pydantic

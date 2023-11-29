@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from logging.handlers import RotatingFileHandler
 import json
 
-from Assolement import recherche_nbr_PV, recherche_rang, position_PV, angles, carte_lux
+from Assolement import recherche_nbr_PV, recherche_rang, position_PV, angles, carte_lux, recherche_rang_asymetrique
 #from affichage import *
 
 app = Flask(__name__)
@@ -131,9 +131,11 @@ def calculte_assolement():
                                  lon_PV,
                                  configuration.damier,
                                  configuration.puit_lux)
-        (nbr_rang, couv_real)= recherche_rang(larg_PV,
-                                              configuration.couverture,
-                                              configuration.larg_serre, betaPV)
+        (nbr_rang, couv_real)= recherche_rang_asymetrique(larg_PV=larg_PV, couverture=configuration.couverture,
+                                                          petit_cote=configuration.petit_cote,
+                                                          grand_cote=configuration.grand_cote,
+                                                          petit_angle=configuration.petit_angle,
+                                                          grand_angle=configuration.grand_angle)
         print("Couverture effectivement réalisée: ", couv_real)
         PV= position_PV (configuration.lon_serre,
                          configuration.larg_serre, grand_cote,
@@ -192,7 +194,8 @@ def calculte_assolement():
                                 h_toit=h_toit,
                                 espace=configuration.espace,
                                 damier=configuration.damier,
-                                angles_df=angles_df)
+                                angles_df=angles_df,
+                                couverture=configuration.couverture)
 
     '''data = {"cubes": cubes, "cubes_pourcent": cubes_pourcent, "hiver_pourcent": hiver_pourcent,
             "hiver": hiver, "ete_pourcent": ete_pourcent, "ete": ete, "printemps": printemps,
